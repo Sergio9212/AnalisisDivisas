@@ -1,9 +1,8 @@
 package monedas.api.core.servicios;
 
 import java.util.List;
-import java.util.Date;
 
-import monedas.api.dominio.entidades.*;
+import monedas.api.dominio.entidades.Moneda;
 
 public interface IMonedaServicio {
 
@@ -21,6 +20,6 @@ public interface IMonedaServicio {
 
     public boolean eliminar(Long id);
 	
-	public List<CambioMoneda> listarPorPeriodo(long idMoneda, Date fecha1, Date fecha2);
+	//public List<CambioMoneda> listarPorPeriodo(long idMoneda, Date fecha1, Date fecha2);
 
 }

@@ -6,14 +6,14 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
  
-    <artifactId>infraestructura</artifactId>
+    <artifactId>core</artifactId>
     <packaging>jar</packaging>
  
     <dependencies>
         <dependency>
-            <groupId>cambiomonedas</groupId> <!-- Ajusta según el paquete de tu proyecto -->
+            <groupId>cambiomonedas</groupId>
             <artifactId>dominio</artifactId>
-            <version>0.0.1-SNAPSHOT</version> <!-- O usa la versión que corresponda -->
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>

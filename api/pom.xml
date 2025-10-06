@@ -28,7 +28,11 @@
 		<url/>
 	</scm>
 	<modules>
-         <module>dominio</module>
+	    <module>presentacion</module>
+        <module>aplicacion</module>
+        <module>core</module>
+        <module>infraestructura</module>
+        <module>dominio</module>
     </modules>
 	<properties>
 		<java.version>17</java.version>

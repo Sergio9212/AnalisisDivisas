@@ -6,13 +6,23 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
  
-    <artifactId>infraestructura</artifactId>
+    <artifactId>aplicacion</artifactId>
     <packaging>jar</packaging>
  
     <dependencies>
         <dependency>
             <groupId>cambiomonedas</groupId> <!-- Ajusta según el paquete de tu proyecto -->
             <artifactId>dominio</artifactId>
+            <version>0.0.1-SNAPSHOT</version> <!-- O usa la versión que corresponda -->
+        </dependency>
+        <dependency>
+            <groupId>cambiomonedas</groupId> <!-- Ajusta según el paquete de tu proyecto -->
+            <artifactId>core</artifactId>
+            <version>0.0.1-SNAPSHOT</version> <!-- O usa la versión que corresponda -->
+        </dependency>
+        <dependency>
+            <groupId>cambiomonedas</groupId> <!-- Ajusta según el paquete de tu proyecto -->
+            <artifactId>infraestructura</artifactId>
             <version>0.0.1-SNAPSHOT</version> <!-- O usa la versión que corresponda -->
         </dependency>
     </dependencies>
