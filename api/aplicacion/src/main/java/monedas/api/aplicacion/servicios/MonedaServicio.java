@@ -1,7 +1,6 @@
 package monedas.api.aplicacion.servicios;
 
 import java.util.List;
-import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -16,37 +15,38 @@ public class MonedaServicio implements IMonedaServicio {
 
     @Autowired
     private IMonedaRepositorio repositorio;
-    //private ICambioMonedaRepositorio repositorioCambio;
-    
+    // private ICambioMonedaRepositorio repositorioCambio;
+
     @Override
-    public List<Moneda> listar(){
+    public List<Moneda> listar() {
         return repositorio.findAll();
-     }
+    }
 
     @Override
-    public Moneda obtener(Long id){
+    @SuppressWarnings("null")
+    public Moneda obtener(Long id) {
         var moneda = repositorio.findById(id);
-        return moneda.isEmpty()? null : moneda.get();
-     }
+        return moneda.isEmpty() ? null : moneda.get();
+    }
 
     @Override
-    public List<Moneda> buscar(String nombre){ 
+    public List<Moneda> buscar(String nombre) {
         return repositorio.buscar(nombre);
     }
 
     @Override
-    public Moneda buscarPorPais(String nombre){ 
+    public Moneda buscarPorPais(String nombre) {
         return repositorio.buscarPorPais(nombre);
     }
 
     @Override
-    public Moneda agregar(Moneda moneda){ 
+    public Moneda agregar(Moneda moneda) {
         moneda.setId(0);
         return repositorio.save(moneda);
     }
 
     @Override
-    public Moneda modificar(Moneda moneda){ 
+    public Moneda modificar(Moneda moneda) {
         Optional<Moneda> monedaEncontrado = repositorio.findById(moneda.getId());
         if (!monedaEncontrado.isEmpty()) {
             return repositorio.save(moneda);
@@ -56,7 +56,8 @@ public class MonedaServicio implements IMonedaServicio {
     }
 
     @Override
-    public boolean eliminar(Long id){ 
+    @SuppressWarnings("null")
+    public boolean eliminar(Long id) {
         try {
             repositorio.deleteById(id);
             return true;
@@ -64,13 +65,11 @@ public class MonedaServicio implements IMonedaServicio {
             return false;
         }
     }
-	
-   // @Override
-	//public List<CambioMoneda> listarPorPeriodo(long idMoneda, Date fecha1, Date fecha2){ 
-      //  return repositorioCambio.listarPorPeriodo(idMoneda, fecha1, fecha2);
-   // }
 
-       
-
+    // @Override
+    // public List<CambioMoneda> listarPorPeriodo(long idMoneda, Date fecha1, Date
+    // fecha2){
+    // return repositorioCambio.listarPorPeriodo(idMoneda, fecha1, fecha2);
+    // }
 
 }

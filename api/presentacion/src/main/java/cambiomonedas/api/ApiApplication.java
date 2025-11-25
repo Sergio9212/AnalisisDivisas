@@ -8,21 +8,21 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {
-    "controladores",
-    "monedas.api.aplicacion",
-    "monedas.api.core",
-    "monedas.api.infraestructura"
+        "cambiomonedas.api.controladores",
+        "monedas.api.aplicacion",
+        "monedas.api.core",
+        "monedas.api.infraestructura"
 })
 @EnableJpaRepositories(basePackages = {
-    "monedas.api.infraestructura.repositorios"
+        "monedas.api.infraestructura.repositorios"
 })
 @EntityScan(basePackages = {
-    "monedas.api.dominio.entidades"
+        "monedas.api.dominio.entidades"
 })
 public class ApiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ApiApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ApiApplication.class, args);
+    }
 
 }

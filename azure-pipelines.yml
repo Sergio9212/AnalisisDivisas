@@ -1,0 +1,109 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  - group: AnalisisDivisas-Variables  # Variable Group con credenciales de Azure
+  - name: MAVEN_CACHE_FOLDER
+    value: $(Pipeline.Workspace)/.m2
+  - name: ARTIFACT_NAME
+    value: drop
+  - name: JAR_NAME
+    value: presentacion-*.jar
+  # Los siguientes valores deben declararse en un Variable Group o como variables secretas
+  # en la librería de Azure Pipelines para no exponer credenciales en el repositorio:
+  # - AZURE_SERVICE_CONNECTION
+  # - AZURE_WEBAPP_NAME
+  # - AZURE_RESOURCE_GROUP (requerido solo para tareas administrativas)
+  # - AZURE_SLOT (opcional si se despliega a un slot distinto de production)
+
+stages:
+  - stage: CI
+    displayName: Build & Test
+    jobs:
+      - job: MavenBuild
+        displayName: Maven build + unit tests
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            clean: true
+
+          - task: Cache@2
+            displayName: Cache Maven local repo
+            inputs:
+              key: 'maven | "$(Agent.OS)" | api/pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: $(MAVEN_CACHE_FOLDER)
+
+          - task: UseJavaVersion@1
+            displayName: Configure Java 17
+            inputs:
+              versionSpec: 17
+              distribution: microsoft
+
+          - script: chmod +x ./api/mvnw
+            displayName: Allow mvnw execution
+
+          - script: ./mvnw -B -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER) clean verify
+            displayName: mvnw clean verify
+            workingDirectory: api
+
+          - task: PublishTestResults@2
+            displayName: Publish Surefire results
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              searchFolder: $(System.DefaultWorkingDirectory)/api
+              mergeTestResults: true
+
+          - task: CopyFiles@2
+            displayName: Copy packaged jar
+            inputs:
+              SourceFolder: api/presentacion/target
+              Contents: $(JAR_NAME)
+              TargetFolder: $(Build.ArtifactStagingDirectory)/app
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish artifacts
+            inputs:
+              PathtoPublish: $(Build.ArtifactStagingDirectory)/app
+              ArtifactName: $(ARTIFACT_NAME)
+              publishLocation: Container
+
+  - stage: CD
+    displayName: Deploy to Azure App Service
+    dependsOn: CI
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployWebApp
+        displayName: Deploy Spring Boot jar
+        environment: production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+
+                - download: current
+                  displayName: Download artifact
+                  artifact: $(ARTIFACT_NAME)
+
+                - task: AzureWebApp@1
+                  displayName: Deploy to Azure App Service
+                  inputs:
+                    azureSubscription: $(AZURE_SERVICE_CONNECTION)
+                    appType: webAppLinux
+                    appName: $(AZURE_WEBAPP_NAME)
+                    package: $(Pipeline.Workspace)/$(ARTIFACT_NAME)/app/$(JAR_NAME)
+                    runtimeStack: 'JAVA|17-java17'
+                    deploymentMethod: auto
+

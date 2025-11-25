@@ -1,7 +1,5 @@
 package monedas.api.dominio.entidades;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,13 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="moneda")
+@Table(name = "moneda")
 public class Moneda {
-    
+
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "secuencia_moneda")
-    @GenericGenerator(name = "secuencia_moneda", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "moneda", length = 100, unique = true)
@@ -83,4 +80,3 @@ public class Moneda {
     }
 
 }
-
