@@ -1,0 +1,138 @@
+# ===========================
+#  CI/CD para Spring Boot Maven
+#  Sistema de Análisis de Divisas
+#  Azure DevOps + App Service
+# ===========================
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  # Estas variables deben configurarse en Azure DevOps > Pipelines > Library > Variable Groups
+  # O directamente aquí (cambiar los valores)
+  AZURE_SERVICE_CONNECTION: 'azure-app-service-connection'  # Cambiar por tu Service Connection
+  APP_NAME: 'app-analisis-divisas-chech'                    # Cambiar por tu App Service name
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2
+  ARTIFACT_NAME: drop
+
+stages:
+
+  # ======================
+  #  STAGE 1: CI - Build & Test
+  # ======================
+  - stage: CI
+    displayName: 'CI - Build and Test'
+    jobs:
+      - job: MavenBuild
+        displayName: 'Build with Maven'
+        pool:
+          vmImage: ubuntu-latest
+
+        steps:
+          # 1. Checkout del código
+          - checkout: self
+            clean: true
+            displayName: 'Checkout code'
+
+          # 2. Configurar Java 17
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+            displayName: 'Setup Java 17'
+
+          # 3. Cache de dependencias Maven (opcional pero recomendado)
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | api/pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: 'Cache Maven dependencies'
+
+          # 4. Dar permisos de ejecución a mvnw
+          - script: chmod +x ./api/mvnw
+            displayName: 'Make mvnw executable'
+
+          # 5. Compilar y empaquetar con Maven
+          - script: |
+              cd api
+              ./mvnw clean package -DskipTests
+            displayName: 'Maven clean package'
+
+          # 6. Ejecutar tests (opcional, quitar -DskipTests arriba si se usa)
+          # - script: |
+          #     cd api
+          #     ./mvnw test
+          #   displayName: 'Run tests'
+
+          # 7. Publicar resultados de tests (si se ejecutan)
+          # - task: PublishTestResults@2
+          #   inputs:
+          #     testResultsFormat: 'JUnit'
+          #     testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          #     searchFolder: '$(System.DefaultWorkingDirectory)/api'
+          #     mergeTestResults: true
+          #   displayName: 'Publish test results'
+          #   condition: always()
+
+          # 8. Copiar el JAR generado
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: 'api/presentacion/target'
+              Contents: '*.jar'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+            displayName: 'Copy JAR to staging'
+
+          # 9. Publicar artefacto
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: '$(ARTIFACT_NAME)'
+              publishLocation: 'Container'
+            displayName: 'Publish artifact'
+
+
+  # ======================
+  #  STAGE 2: CD - Deploy
+  # ======================
+  - stage: CD
+    displayName: 'CD - Deploy to Azure'
+    dependsOn: CI
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    
+    jobs:
+      - deployment: DeployToAzure
+        displayName: 'Deploy to Azure App Service'
+        environment: 'production'  # Crear este environment en Azure DevOps
+        pool:
+          vmImage: ubuntu-latest
+
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # 1. Descargar artefacto del stage CI
+                - download: current
+                  artifact: $(ARTIFACT_NAME)
+                  displayName: 'Download artifact'
+
+                # 2. Desplegar a Azure App Service
+                - task: AzureWebApp@1
+                  displayName: 'Deploy to Azure App Service'
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+                    appType: 'webAppLinux'
+                    appName: '$(APP_NAME)'
+                    package: '$(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.jar'
+                    runtimeStack: 'JAVA|17-java17'
+                    deploymentMethod: 'auto'

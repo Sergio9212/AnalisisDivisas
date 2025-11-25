@@ -1,0 +1,33 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cambiomonedas</groupId>
+        <artifactId>api</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+ 
+    <artifactId>presentacion</artifactId>
+    <packaging>jar</packaging>
+ 
+    <dependencies>
+        <dependency>
+            <groupId>cambiomonedas</groupId>
+            <artifactId>dominio</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>cambiomonedas</groupId>
+            <artifactId>aplicacion</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+ 
+        <!-- Removed H2: using external DB -->
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+    </dependencies>
+ 
+</project>
