@@ -103,36 +103,34 @@ stages:
 
 
   # ======================
-  #  STAGE 2: CD - Deploy
+  #  STAGE 2: CD - Deploy (COMENTADO - Requiere Azure App Service)
   # ======================
-  - stage: CD
-    displayName: 'CD - Deploy to Azure'
-    dependsOn: CI
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-    
-    jobs:
-      - deployment: DeployToAzure
-        displayName: 'Deploy to Azure App Service'
-        environment: 'production'  # Crear este environment en Azure DevOps
-        pool:
-          vmImage: ubuntu-latest
-
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                # 1. Descargar artefacto del stage CI
-                - download: current
-                  artifact: $(ARTIFACT_NAME)
-                  displayName: 'Download artifact'
-
-                # 2. Desplegar a Azure App Service
-                - task: AzureWebApp@1
-                  displayName: 'Deploy to Azure App Service'
-                  inputs:
-                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
-                    appType: 'webAppLinux'
-                    appName: '$(APP_NAME)'
-                    package: '$(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.jar'
-                    runtimeStack: 'JAVA|17-java17'
-                    deploymentMethod: 'auto'
+  # - stage: CD
+  #   displayName: 'CD - Deploy to Azure'
+  #   dependsOn: CI
+  #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  #   
+  #   jobs:
+  #     - deployment: DeployToAzure
+  #       displayName: 'Deploy to Azure App Service'
+  #       environment: 'production'
+  #       pool:
+  #         vmImage: ubuntu-latest
+  #
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #               - download: current
+  #                 artifact: $(ARTIFACT_NAME)
+  #                 displayName: 'Download artifact'
+  #
+  #               - task: AzureWebApp@1
+  #                 displayName: 'Deploy to Azure App Service'
+  #                 inputs:
+  #                   azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+  #                   appType: 'webAppLinux'
+  #                   appName: '$(APP_NAME)'
+  #                   package: '$(Pipeline.Workspace)/$(ARTIFACT_NAME)/*.jar'
+  #                   runtimeStack: 'JAVA|17-java17'
+  #                   deploymentMethod: 'auto'

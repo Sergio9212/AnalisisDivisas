@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación Técnica: Pipeline CI/CD y Despliegue Cloud</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #16a085;
+            margin-top: 20px;
+        }
+        ul {
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            color: #e74c3c;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            a {
+                text-decoration: none;
+                color: #000;
+            }
+            a::after {
+                content: " (" attr(href) ")";
+                font-size: 0.8em;
+                color: #666;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Documentación Técnica: Pipeline CI/CD y Despliegue Cloud</h1>
+
+        <h2>1. Contexto de la Acción Problémica</h2>
+
+        <h3>Objetivo General</h3>
+        <p><strong>"Realizar la automatización de la CI/CD bajo la plataforma Azure."</strong></p>
+
+        <h3>Metodología Aplicada</h3>
+        <p>Se realizaron las actividades necesarias en el código fuente y la plataforma <strong>Azure DevOps</strong> para automatizar el ciclo de vida del proyecto:</p>
+        <ol>
+            <li><strong>Código Fuente:</strong> Se desarrolló una API REST en Java (Spring Boot) con estructura modular y pruebas unitarias.</li>
+            <li><strong>Automatización en Azure:</strong> Se creó y configuró el archivo <code>azure-pipelines.yml</code> para definir los procesos de Integración Continua (Build) y Despliegue Continuo (Deploy).</li>
+            <li><strong>Infraestructura:</strong> Se dockerizó la aplicación para garantizar la portabilidad entre entornos (Azure/Render).</li>
+        </ol>
+
+        <div class="note">
+            <strong>Nota sobre la Ejecución:</strong> Debido a la restricción de Microsoft que requiere aprobación manual para el uso de "Hosted Agents" en cuentas gratuitas de Azure DevOps (solicitud en proceso), se implementó un despliegue demostrativo funcional en <strong>Render.com</strong> para evidenciar el correcto funcionamiento del software y la contenedorización, mientras se mantiene la definición del pipeline en Azure lista para su activación.
+        </div>
+
+        <h2>2. Arquitectura del Proyecto</h2>
+        <ul>
+            <li><strong>Lenguaje:</strong> Java 17</li>
+            <li><strong>Framework:</strong> Spring Boot 3.5.6</li>
+            <li><strong>Gestor de Dependencias:</strong> Maven</li>
+            <li><strong>Base de Datos:</strong> PostgreSQL (Desarrollo) / H2 (Producción/Demo)</li>
+            <li><strong>Contenedorización:</strong> Docker</li>
+        </ul>
+
+        <h2>3. Estrategia de Ramificación (Branching Strategy)</h2>
+        <p>Se utiliza una estrategia basada en <strong>Trunk Based Development</strong> simplificado:</p>
+        <ul>
+            <li><strong>main:</strong> Rama principal, siempre desplegable. Protegida mediante Branch Policies.</li>
+            <li><strong>feature/*:</strong> Ramas para desarrollo de nuevas funcionalidades.</li>
+        </ul>
+
+        <h3>Políticas de Rama (Branch Policies)</h3>
+        <p>Para proteger la rama <code>main</code> en Azure DevOps:</p>
+        <ul>
+            <li><strong>Pull Request (PR) obligatorio:</strong> No se permiten commits directos a main.</li>
+            <li><strong>Revisores mínimos:</strong> 1 revisor requerido.</li>
+            <li><strong>Build Validation:</strong> El pipeline de CI debe pasar exitosamente antes de completar el PR.</li>
+            <li><strong>Work Item Linking:</strong> Todo PR debe estar vinculado a una tarea o historia de usuario.</li>
+        </ul>
+
+        <h2>4. Pipeline de Integración Continua (CI)</h2>
+        <p>Implementado en <strong>Azure DevOps</strong> (<code>azure-pipelines.yml</code>).</p>
+
+        <h3>Stages del Pipeline</h3>
+        <ol>
+            <li><strong>Build:</strong>
+                <ul>
+                    <li>Compila el proyecto usando Maven Wrapper (<code>mvnw</code>).</li>
+                    <li>Ejecuta pruebas unitarias.</li>
+                    <li>Genera el artefacto (<code>.jar</code>).</li>
+                    <li>Publica el artefacto para su uso posterior.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Trigger</h3>
+        <ul>
+            <li>Automático al hacer push a <code>main</code>.</li>
+            <li>Automático al crear/actualizar un Pull Request hacia <code>main</code>.</li>
+        </ul>
+
+        <h2>5. Pipeline de Despliegue Continuo (CD)</h2>
+        <p>Debido a restricciones en el tier gratuito de Azure (aprobación de agentes hosted), se implementó una estrategia híbrida:</p>
+        <ol>
+            <li><strong>Definición en Azure DevOps:</strong> El stage de despliegue está definido en <code>azure-pipelines.yml</code> (actualmente comentado) para desplegar a Azure App Service.</li>
+            <li><strong>Implementación Real en Render:</strong> Se configuró un despliegue automático en <strong>Render.com</strong> conectado al repositorio.</li>
+        </ol>
+
+        <h2>6. Dockerización</h2>
+        <p>Se creó un <code>Dockerfile</code> multi-stage para optimizar la imagen final:</p>
+        <ul>
+            <li><strong>Stage 1 (Build):</strong> Usa imagen Maven para compilar el proyecto.</li>
+            <li><strong>Stage 2 (Run):</strong> Usa imagen OpenJDK 17 ligera (slim) para ejecutar la aplicación.</li>
+        </ul>
+
+        <h2>7. Despliegue en Render.com (Producción)</h2>
+        <p>La aplicación se encuentra desplegada y operativa en la plataforma Render.</p>
+
+        <h3>Configuración</h3>
+        <ul>
+            <li><strong>Servicio:</strong> Web Service (Docker)</li>
+            <li><strong>Base de Datos:</strong> H2 Database (En memoria, configurada para producción)</li>
+            <li><strong>Variables de Entorno:</strong> <code>SPRING_PROFILES_ACTIVE=prod</code></li>
+        </ul>
+
+        <h3>Enlaces de Acceso (Producción)</h3>
+        <ul>
+            <li><strong>Estado del Servicio (Health Check):</strong><br>
+                <a href="https://analisisdivisas.onrender.com/api/monedas/health">https://analisisdivisas.onrender.com/api/monedas/health</a><br>
+                <em>(Debe responder: "Servicio de monedas funcionando correctamente")</em>
+            </li>
+            <li><strong>Documentación API (Swagger UI):</strong><br>
+                <a href="https://analisisdivisas.onrender.com/swagger-ui/index.html">https://analisisdivisas.onrender.com/swagger-ui/index.html</a><br>
+                <em>(Interfaz interactiva para probar los endpoints)</em>
+            </li>
+            <li><strong>Listado de Monedas:</strong><br>
+                <a href="https://analisisdivisas.onrender.com/api/monedas/listar">https://analisisdivisas.onrender.com/api/monedas/listar</a>
+            </li>
+        </ul>
+
+        <h2>8. Conclusiones</h2>
+        <p>El proyecto cuenta con un ciclo de vida de desarrollo completo y moderno:</p>
+        <ol>
+            <li>Código en <strong>GitHub</strong>.</li>
+            <li>CI/CD definido en <strong>Azure DevOps</strong>.</li>
+            <li>Contenedorización con <strong>Docker</strong>.</li>
+            <li>Despliegue automático en <strong>Render</strong>.</li>
+        </ol>
+    </div>
+</body>
+</html>
